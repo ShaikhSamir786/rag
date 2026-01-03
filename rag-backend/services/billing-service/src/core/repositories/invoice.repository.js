@@ -29,3 +29,4 @@ class InvoiceRepository extends BaseRepository {
 
 module.exports = { InvoiceRepository };
 
+
