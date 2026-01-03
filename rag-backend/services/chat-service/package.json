@@ -1,18 +1,33 @@
 {
     "name": "chat-service",
     "version": "1.0.0",
+    "description": "Chat service with RAG capabilities",
     "main": "src/index.js",
     "scripts": {
         "dev": "nodemon src/index.js",
-        "start": "node src/index.js"
+        "start": "node src/index.js",
+        "test": "jest --coverage",
+        "test:watch": "jest --watch",
+        "test:integration": "jest --testPathPattern=integration"
     },
     "dependencies": {
         "@rag-platform/common": "*",
         "@rag-platform/database": "*",
         "@rag-platform/events": "*",
         "@rag-platform/logger": "*",
+        "axios": "^1.6.0",
+        "bull": "^4.11.5",
+        "cors": "^2.8.5",
         "express": "^4.18.2",
-        "mongoose": "^9.1.1",
+        "express-validator": "^7.0.1",
+        "helmet": "^7.1.0",
+        "ioredis": "^5.3.2",
+        "mongoose": "^8.1.1",
         "socket.io": "^4.7.2"
+    },
+    "devDependencies": {
+        "jest": "^29.7.0",
+        "nodemon": "^3.0.2",
+        "supertest": "^6.3.3"
     }
 }

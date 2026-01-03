@@ -1,0 +1,32 @@
+[
+    {
+        "sessionId": "session1",
+        "userId": "user1",
+        "title": "Sample Chat Session",
+        "messages": [
+            {
+                "role": "user",
+                "content": "Hello, how are you?"
+            },
+            {
+                "role": "assistant",
+                "content": "I'm doing well, thank you! How can I help you today?"
+            }
+        ]
+    },
+    {
+        "sessionId": "session2",
+        "userId": "user2",
+        "title": "Technical Discussion",
+        "messages": [
+            {
+                "role": "user",
+                "content": "Can you explain microservices architecture?"
+            },
+            {
+                "role": "assistant",
+                "content": "Microservices architecture is a design pattern where applications are built as a collection of small, independent services..."
+            }
+        ]
+    }
+]
