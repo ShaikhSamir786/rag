@@ -1,0 +1,8 @@
+{
+  "name": "@rag-platform/logger",
+  "version": "1.0.0",
+  "main": "src/index.js",
+  "dependencies": {
+    "winston": "^3.11.0"
+  }
+}

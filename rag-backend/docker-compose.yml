@@ -1,0 +1,273 @@
+version: '3.8'
+
+services:
+  # Databases
+  postgres:
+    image: timescale/timescaledb:latest-pg15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: rag_platform
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - microservices
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - microservices
+
+  # MongoDB - Chat Service
+  mongodb:
+    image: mongo:7
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin123
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - microservices
+
+  # Nginx Gateway (Public Entry Point)
+  nginx-gateway:
+    build:
+      context: .
+      dockerfile: infrastructure/nginx/Dockerfile
+    ports:
+      - "3000:80"
+    depends_on:
+      - api-gateway-node
+      - auth-service
+      - query-service
+    networks:
+      - microservices
+
+  # Node.js Gateway Aggregator (Internal - GraphQL/WS)
+  api-gateway-node:
+    build:
+      context: .
+      dockerfile: services/api-gateway/Dockerfile
+    command: npx nodemon src/server.js
+    expose:
+      - "3000"
+    environment:
+      - NODE_ENV=development
+      - REDIS_URL=redis://redis:6379
+      - AUTH_SERVICE_URL=http://auth-service:3001
+      - DOCUMENT_SERVICE_URL=http://document-service:3002
+      - BILLING_SERVICE_URL=http://billing-service:3003
+      - QUERY_SERVICE_URL=http://query-service:3004
+      - ANALYTICS_SERVICE_URL=http://analytics-service:3005
+      - CHAT_SERVICE_URL=http://chat-service:3006
+      - NOTIFICATION_SERVICE_URL=http://notification-service:3007
+      - JWT_SECRET=dev-secret
+    depends_on:
+      - redis
+    networks:
+      - microservices
+    volumes:
+      - ./services/api-gateway:/app/services/api-gateway
+      - ./packages:/app/packages
+      - /app/node_modules
+
+  # Auth Service (3001)
+  auth-service:
+    build:
+      context: .
+      dockerfile: services/auth-service/Dockerfile
+    command: npx nodemon src/index.js
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/rag_platform
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=dev-secret
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - microservices
+    volumes:
+      - ./services/auth-service:/app/services/auth-service
+      - ./packages:/app/packages
+      - /app/node_modules
+
+  # Document Service (3002)
+  document-service:
+    build:
+      context: .
+      dockerfile: services/document-service/Dockerfile
+    command: npx nodemon src/index.js
+    ports:
+      - "3002:3002"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/rag_platform
+      - REDIS_URL=redis://redis:6379
+      - AWS_REGION=us-east-1
+      - S3_BUCKET=rag-docs-dev
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - microservices
+    volumes:
+      - ./services/document-service:/app/services/document-service
+      - ./packages:/app/packages
+      - /app/node_modules
+
+  # Billing Service (3003)
+  billing-service:
+    build:
+      context: .
+      dockerfile: services/billing-service/Dockerfile
+    command: npx nodemon src/index.js
+    ports:
+      - "3003:3003"
+    environment:
+      - NODE_ENV=development
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+    networks:
+      - microservices
+    volumes:
+      - ./services/billing-service:/app/services/billing-service
+      - ./packages:/app/packages
+      - /app/node_modules
+
+  # Query Service (3004) - GraphQL
+  query-service:
+    build:
+      context: .
+      dockerfile: services/query-service/Dockerfile
+    command: npx nodemon src/index.js
+    ports:
+      - "3004:3004"
+    environment:
+      - NODE_ENV=development
+      - REDIS_URL=redis://redis:6379
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - PINECONE_API_KEY=${PINECONE_API_KEY}
+      - AI_PROVIDER_EMBEDDING=gemini
+      - AI_PROVIDER_CHAT=openai
+    depends_on:
+      - redis
+    networks:
+      - microservices
+    volumes:
+      - ./services/query-service:/app/services/query-service
+      - ./packages:/app/packages
+      - /app/node_modules
+
+  # Analytics Service (3005) - GraphQL
+  analytics-service:
+    build:
+      context: .
+      dockerfile: services/analytics-service/Dockerfile
+    command: npx nodemon src/index.js
+    ports:
+      - "3005:3005"
+    environment:
+      - NODE_ENV=development
+      - REDIS_URL=redis://redis:6379
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/rag_platform
+      # TimescaleDB shares the same Postgres instance but we connect to a separate DB if we want, 
+      # or same DB with hypertable. Let's use the main one for simplicity or 'analytics' DB if created.
+      # For now using main DB, simplest for "Free"
+    depends_on:
+      - redis
+      - postgres
+    networks:
+      - microservices
+    volumes:
+      - ./services/analytics-service:/app/services/analytics-service
+      - ./packages:/app/packages
+      - /app/node_modules
+
+  # Chat Service (3006) - WebSocket
+  chat-service:
+    build:
+      context: .
+      dockerfile: services/chat-service/Dockerfile
+    command: npx nodemon src/index.js
+    ports:
+      - "3006:3006"
+    environment:
+      - NODE_ENV=development
+      - REDIS_URL=redis://redis:6379
+      - MONGO_URI=mongodb://admin:admin123@mongodb:27017/chat_service?authSource=admin
+    depends_on:
+      - redis
+      - mongodb
+    networks:
+      - microservices
+    volumes:
+      - ./services/chat-service:/app/services/chat-service
+      - ./packages:/app/packages
+      - /app/node_modules
+
+  # Notification Service (3007) - WebSocket
+  notification-service:
+    build:
+      context: .
+      dockerfile: services/notification-service/Dockerfile
+    command: npx nodemon src/index.js
+    ports:
+      - "3007:3007"
+    environment:
+      - NODE_ENV=development
+      - REDIS_URL=redis://redis:6379
+      - SMTP_HOST=mailhog
+      - SMTP_PORT=1025
+    depends_on:
+      - redis
+    networks:
+      - microservices
+    volumes:
+      - ./services/notification-service:/app/services/notification-service
+      - ./packages:/app/packages
+      - /app/node_modules
+
+  # Embedding Service (Worker)
+  embedding-service:
+    build:
+      context: .
+      dockerfile: services/embedding-service/Dockerfile
+    command: npx nodemon src/index.js
+    ports:
+      - "3008:3003"
+    environment:
+      - NODE_ENV=development
+      - REDIS_URL=redis://redis:6379
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - PINECONE_API_KEY=${PINECONE_API_KEY}
+      - PINECONE_INDEX=rag-dev
+      - AI_PROVIDER_EMBEDDING=gemini
+    depends_on:
+      - redis
+    networks:
+      - microservices
+    volumes:
+      - ./services/embedding-service:/app/services/embedding-service
+      - ./packages:/app/packages
+      - /app/node_modules
+
+volumes:
+  postgres_data:
+  redis_data:
+  mongodb_data:
+
+
+networks:
+  microservices:
+    driver: bridge

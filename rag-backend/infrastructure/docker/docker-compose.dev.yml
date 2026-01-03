@@ -1,0 +1,210 @@
+version: '3.8'
+
+services:
+  # Databases
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: rag_platform
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - microservices
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - microservices
+
+  # API Gateway
+  api-gateway:
+    build:
+      context: ../../
+      dockerfile: services/api-gateway/Dockerfile
+    command: npx nodemon src/index.js
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - REDIS_URL=redis://redis:6379
+      - AUTH_SERVICE_URL=http://auth-service:3001
+      - DOCUMENT_SERVICE_URL=http://document-service:3002
+      - QUERY_SERVICE_URL=http://query-service:3004
+      - JWT_SECRET=dev-secret
+    depends_on:
+      - redis
+    networks:
+      - microservices
+    volumes:
+      - ../../services/api-gateway:/app/services/api-gateway
+      - ../../packages:/app/packages
+      - /app/node_modules
+
+  # Auth Service
+  auth-service:
+    build:
+      context: ../../
+      dockerfile: services/auth-service/Dockerfile
+    command: npx nodemon src/index.js
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/rag_platform
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=dev-secret
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - microservices
+    volumes:
+      - ../../services/auth-service:/app/services/auth-service
+      - ../../packages:/app/packages
+      - /app/node_modules
+
+  # Document Service (Core + Worker)
+  document-service:
+    build:
+      context: ../../
+      dockerfile: services/document-service/Dockerfile
+    command: npx nodemon src/index.js
+    ports:
+      - "3002:3002"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/rag_platform
+      - REDIS_URL=redis://redis:6379
+      - AWS_REGION=us-east-1
+      - S3_BUCKET=rag-docs-dev
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - microservices
+    volumes:
+      - ../../services/document-service:/app/services/document-service
+      - ../../packages:/app/packages
+      - /app/node_modules
+
+  # Embedding Service
+  embedding-service:
+    build:
+      context: ../../
+      dockerfile: services/embedding-service/Dockerfile
+    command: npx nodemon src/index.js
+    ports:
+      - "3003:3003"
+    environment:
+      - NODE_ENV=development
+      - REDIS_URL=redis://redis:6379
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - PINECONE_API_KEY=${PINECONE_API_KEY}
+      - PINECONE_INDEX=rag-dev
+    depends_on:
+      - redis
+    networks:
+      - microservices
+    volumes:
+      - ../../services/embedding-service:/app/services/embedding-service
+      - ../../packages:/app/packages
+      - /app/node_modules
+
+  # Query Service
+  query-service:
+    build:
+      context: ../../
+      dockerfile: services/query-service/Dockerfile
+    command: npx nodemon src/index.js
+    ports:
+      - "3004:3004"
+    environment:
+      - NODE_ENV=development
+      - REDIS_URL=redis://redis:6379
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - PINECONE_API_KEY=${PINECONE_API_KEY}
+    depends_on:
+      - redis
+    networks:
+      - microservices
+    volumes:
+      - ../../services/query-service:/app/services/query-service
+      - ../../packages:/app/packages
+      - /app/node_modules
+
+  # Notification Service
+  notification-service:
+    build:
+      context: ../../
+      dockerfile: services/notification-service/Dockerfile
+    command: npx nodemon src/index.js
+    ports:
+      - "3005:3005"
+    environment:
+      - NODE_ENV=development
+      - REDIS_URL=redis://redis:6379
+      - SMTP_HOST=mailhog
+      - SMTP_PORT=1025
+    depends_on:
+      - redis
+    networks:
+      - microservices
+    volumes:
+      - ../../services/notification-service:/app/services/notification-service
+      - ../../packages:/app/packages
+      - /app/node_modules
+
+  # Analytics Service
+  analytics-service:
+    build:
+      context: ../../
+      dockerfile: services/analytics-service/Dockerfile
+    command: npx nodemon src/index.js
+    ports:
+      - "3006:3006"
+    environment:
+      - NODE_ENV=development
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - redis
+    networks:
+      - microservices
+    volumes:
+      - ../../services/analytics-service:/app/services/analytics-service
+      - ../../packages:/app/packages
+      - /app/node_modules
+
+  # Billing Service
+  billing-service:
+    build:
+      context: ../../
+      dockerfile: services/billing-service/Dockerfile
+    command: npx nodemon src/index.js
+    ports:
+      - "3007:3007"
+    environment:
+      - NODE_ENV=development
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+    networks:
+      - microservices
+    volumes:
+      - ../../services/billing-service:/app/services/billing-service
+      - ../../packages:/app/packages
+      - /app/node_modules
+
+volumes:
+  postgres_data:
+  redis_data:
+
+
+networks:
+  microservices:
+    driver: bridge
