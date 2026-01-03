@@ -14,13 +14,13 @@ app.use(errorHandler);
 const PORT = process.env.PORT || 3003;
 
 const start = async () => {
-    try {
-        // Start worker
-        setupWorker();
-        logger.info('Embedding Worker started');
+  try {
+    // Start worker
+    setupWorker();
+    logger.info('Embedding Worker started');
 
-        app.listen(PORT, () => {
-            logger.info(\`Embedding Service running on port \${PORT}\`);
+    app.listen(PORT, () => {
+      logger.info(`Embedding Service running on port ${PORT}`);
     });
   } catch (error) {
     logger.error('Failed to start service', error);

@@ -6,7 +6,7 @@ const notificationService = new NotificationService();
 
 const setupWorker = () => {
     const worker = new Worker('email-notifications', async (job) => {
-        logger.info(\`Sending email to \${job.data.to}\`);
+        logger.info(`Sending email to ${job.data.to}`);
         await notificationService.sendEmail(job.data.to, job.data.subject, job.data.content);
         logger.info('Email sent successfully');
     }, {

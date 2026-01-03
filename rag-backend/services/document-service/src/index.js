@@ -13,11 +13,11 @@ app.use(errorHandler);
 const PORT = process.env.PORT || 3002;
 
 const start = async () => {
-    try {
-        await sequelize.authenticate();
-        await sequelize.sync();
-        app.listen(PORT, () => {
-            logger.info(\`Document Service running on port \${PORT}\`);
+  try {
+    await sequelize.authenticate();
+    await sequelize.sync();
+    app.listen(PORT, () => {
+      logger.info(`Document Service running on port ${PORT}`);
     });
   } catch (error) {
     logger.error('Failed to start service', error);

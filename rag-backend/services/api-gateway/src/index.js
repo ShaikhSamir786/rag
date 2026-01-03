@@ -19,21 +19,21 @@ setupWebSocket(httpServer);
 
 // GraphQL
 const startServer = async () => {
-    const graphqlServer = createGraphQLServer();
-    await graphqlServer.start();
+  const graphqlServer = createGraphQLServer();
+  await graphqlServer.start();
 
-    app.use('/graphql', expressMiddleware(graphqlServer));
+  app.use('/graphql', expressMiddleware(graphqlServer));
 
-    // REST Routes
-    app.use('/api/v1', routes);
+  // REST Routes
+  app.use('/api/v1', routes);
 
-    // Error Handler
-    app.use(errorHandler);
+  // Error Handler
+  app.use(errorHandler);
 
-    const PORT = process.env.PORT || 3000;
-    httpServer.listen(PORT, () => {
-        logger.info(\`API Gateway running on port \${PORT}\`);
-    logger.info(\`GraphQL ready at http://localhost:\${PORT}/graphql\`);
+  const PORT = process.env.PORT || 3000;
+  httpServer.listen(PORT, () => {
+    logger.info(`API Gateway running on port ${PORT}`);
+    logger.info(`GraphQL ready at http://localhost:${PORT}/graphql`);
   });
 };
 

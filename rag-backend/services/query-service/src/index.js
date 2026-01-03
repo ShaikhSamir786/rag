@@ -17,13 +17,13 @@ const typeDefs = `
 `;
 
 const resolvers = {
-    Query: {
-        ask: async (_, { question }) => {
-            const service = new QueryService();
-            // Placeholder for actual logic calling service.question(question)
-            return { text: `Answer to: ${question}`, sources: ['doc1'] };
-        },
+  Query: {
+    ask: async (_, { question }) => {
+      const service = new QueryService();
+      // Placeholder for actual logic calling service.question(question)
+      return { text: `Answer to: ${question}`, sources: ['doc1'] };
     },
+  },
 };
 
 const app = express();
@@ -33,16 +33,16 @@ app.use(express.json());
 app.use('/query', queryRoutes);
 
 const startServer = async () => {
-    const server = new ApolloServer({ typeDefs, resolvers });
-    await server.start();
+  const server = new ApolloServer({ typeDefs, resolvers });
+  await server.start();
 
-    app.use('/graphql', expressMiddleware(server));
-    app.use(errorHandler);
+  app.use('/graphql', expressMiddleware(server));
+  app.use(errorHandler);
 
-    const PORT = process.env.PORT || 3004;
-    app.listen(PORT, () => {
-        logger.info(`Query Service (GraphQL+REST) running on port ${PORT}`);
-    });
+  const PORT = process.env.PORT || 3004;
+  app.listen(PORT, () => {
+    logger.info(`Query Service (GraphQL+REST) running on port ${PORT}`);
+  });
 };
 
 startServer();
