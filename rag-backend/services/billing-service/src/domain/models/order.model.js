@@ -1,9 +1,9 @@
 const { DataTypes, Model } = require('sequelize');
 const { sequelize } = require('@rag-platform/database');
 
-class Invoice extends Model { }
+class Order extends Model { }
 
-Invoice.init({
+Order.init({
     id: {
         type: DataTypes.UUID,
         defaultValue: DataTypes.UUIDV4,
@@ -14,21 +14,22 @@ Invoice.init({
         allowNull: false,
         field: 'tenant_id'
     },
-    orderId: {
+    userId: {
         type: DataTypes.UUID,
         allowNull: false,
-        field: 'order_id',
-        references: {
-            model: 'orders',
-            key: 'id'
-        },
-        onDelete: 'CASCADE'
+        field: 'user_id'
     },
-    invoiceNumber: {
+    orderNumber: {
         type: DataTypes.STRING,
         allowNull: false,
         unique: true,
-        field: 'invoice_number'
+        field: 'order_number'
+    },
+    idempotencyKey: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true,
+        field: 'idempotency_key'
     },
     amount: {
         type: DataTypes.DECIMAL(10, 2),
@@ -43,19 +44,19 @@ Invoice.init({
         defaultValue: 'USD'
     },
     status: {
-        type: DataTypes.ENUM('pending', 'paid', 'overdue', 'cancelled'),
+        type: DataTypes.ENUM('pending', 'processing', 'completed', 'failed', 'cancelled'),
         allowNull: false,
         defaultValue: 'pending'
     },
-    dueDate: {
-        type: DataTypes.DATE,
-        allowNull: true,
-        field: 'due_date'
+    paymentType: {
+        type: DataTypes.ENUM('one_time', 'subscription'),
+        allowNull: false,
+        defaultValue: 'one_time',
+        field: 'payment_type'
     },
-    paidAt: {
-        type: DataTypes.DATE,
-        allowNull: true,
-        field: 'paid_at'
+    description: {
+        type: DataTypes.TEXT,
+        allowNull: true
     },
     metadata: {
         type: DataTypes.JSONB,
@@ -64,8 +65,8 @@ Invoice.init({
     }
 }, {
     sequelize,
-    modelName: 'Invoice',
-    tableName: 'invoices',
+    modelName: 'Order',
+    tableName: 'orders',
     timestamps: true,
     createdAt: 'created_at',
     updatedAt: 'updated_at',
@@ -74,17 +75,24 @@ Invoice.init({
             fields: ['tenant_id']
         },
         {
-            fields: ['order_id']
+            fields: ['user_id']
         },
         {
-            fields: ['invoice_number'],
+            fields: ['order_number'],
+            unique: true
+        },
+        {
+            fields: ['idempotency_key'],
             unique: true
         },
         {
             fields: ['status']
+        },
+        {
+            fields: ['created_at']
         }
     ]
 });
 
-module.exports = { Invoice };
+module.exports = { Order };
 

@@ -1,0 +1,76 @@
+{
+  "payment_intent.succeeded": {
+    "id": "evt_test_123",
+    "object": "event",
+    "api_version": "2024-11-20.acacia",
+    "created": 1234567890,
+    "data": {
+      "object": {
+        "id": "pi_test_123",
+        "object": "payment_intent",
+        "amount": 10000,
+        "currency": "usd",
+        "status": "succeeded",
+        "client_secret": "pi_test_123_secret",
+        "metadata": {
+          "orderId": "order-123",
+          "userId": "user-123",
+          "tenantId": "tenant-123"
+        }
+      }
+    },
+    "type": "payment_intent.succeeded"
+  },
+  "payment_intent.payment_failed": {
+    "id": "evt_test_456",
+    "object": "event",
+    "api_version": "2024-11-20.acacia",
+    "created": 1234567890,
+    "data": {
+      "object": {
+        "id": "pi_test_456",
+        "object": "payment_intent",
+        "amount": 10000,
+        "currency": "usd",
+        "status": "requires_payment_method",
+        "last_payment_error": {
+          "message": "Your card was declined.",
+          "code": "card_declined",
+          "type": "card_error"
+        },
+        "metadata": {
+          "orderId": "order-456",
+          "userId": "user-123",
+          "tenantId": "tenant-123"
+        }
+      }
+    },
+    "type": "payment_intent.payment_failed"
+  },
+  "charge.refunded": {
+    "id": "evt_test_789",
+    "object": "event",
+    "api_version": "2024-11-20.acacia",
+    "created": 1234567890,
+    "data": {
+      "object": {
+        "id": "ch_test_789",
+        "object": "charge",
+        "amount": 10000,
+        "currency": "usd",
+        "refunded": true,
+        "refunds": {
+          "data": [
+            {
+              "id": "re_test_789",
+              "amount": 10000,
+              "status": "succeeded"
+            }
+          ]
+        }
+      }
+    },
+    "type": "charge.refunded"
+  }
+}
+
