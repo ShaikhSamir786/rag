@@ -1,9 +1,9 @@
 const { DataTypes, Model } = require('sequelize');
 const { sequelize } = require('@rag-platform/database');
 
-class Session extends Model { }
+class OTP extends Model { }
 
-Session.init({
+OTP.init({
     id: {
         type: DataTypes.UUID,
         defaultValue: DataTypes.UUIDV4,
@@ -11,7 +11,7 @@ Session.init({
     },
     userId: {
         type: DataTypes.UUID,
-        allowNull: false,
+        allowNull: true,
         field: 'user_id',
         references: {
             model: 'users',
@@ -19,53 +19,66 @@ Session.init({
         },
         onDelete: 'CASCADE'
     },
-    refreshToken: {
+    email: {
         type: DataTypes.STRING,
         allowNull: false,
-        unique: true,
-        field: 'refresh_token'
+        validate: {
+            isEmail: true
+        }
     },
-    deviceInfo: {
-        type: DataTypes.JSONB,
-        allowNull: true,
-        field: 'device_info',
-        defaultValue: {}
+    code: {
+        type: DataTypes.STRING(6),
+        allowNull: false,
+        validate: {
+            len: [6, 6],
+            isNumeric: true
+        }
     },
-    ipAddress: {
-        type: DataTypes.STRING,
-        allowNull: true,
-        field: 'ip_address'
+    type: {
+        type: DataTypes.ENUM('VERIFICATION', 'PASSWORD_RESET'),
+        allowNull: false,
+        defaultValue: 'VERIFICATION'
     },
     expiresAt: {
         type: DataTypes.DATE,
         allowNull: false,
         field: 'expires_at'
     },
-    isRevoked: {
+    attempts: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
+        validate: {
+            min: 0
+        }
+    },
+    isUsed: {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
-        field: 'is_revoked'
+        field: 'is_used'
     }
 }, {
     sequelize,
-    modelName: 'Session',
-    tableName: 'sessions',
+    modelName: 'OTP',
+    tableName: 'otps',
     timestamps: true,
     indexes: [
         {
-            fields: ['user_id']
+            fields: ['email']
         },
         {
-            fields: ['refresh_token']
+            fields: ['code']
         },
         {
             fields: ['expires_at']
         },
         {
-            fields: ['user_id', 'is_revoked']
+            fields: ['user_id']
+        },
+        {
+            fields: ['email', 'type', 'is_used']
         }
     ]
 });
 
-module.exports = { Session };
+module.exports = { OTP };
 

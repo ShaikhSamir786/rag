@@ -1,9 +1,9 @@
 const { DataTypes, Model } = require('sequelize');
 const { sequelize } = require('@rag-platform/database');
 
-class Session extends Model { }
+class OAuthAccount extends Model { }
 
-Session.init({
+OAuthAccount.init({
     id: {
         type: DataTypes.UUID,
         defaultValue: DataTypes.UUIDV4,
@@ -19,53 +19,55 @@ Session.init({
         },
         onDelete: 'CASCADE'
     },
-    refreshToken: {
+    provider: {
+        type: DataTypes.ENUM('google', 'github'),
+        allowNull: false
+    },
+    providerId: {
         type: DataTypes.STRING,
         allowNull: false,
-        unique: true,
-        field: 'refresh_token'
+        field: 'provider_id'
     },
-    deviceInfo: {
-        type: DataTypes.JSONB,
-        allowNull: true,
-        field: 'device_info',
-        defaultValue: {}
-    },
-    ipAddress: {
+    email: {
         type: DataTypes.STRING,
+        allowNull: false,
+        validate: {
+            isEmail: true
+        }
+    },
+    accessToken: {
+        type: DataTypes.TEXT,
         allowNull: true,
-        field: 'ip_address'
+        field: 'access_token'
+    },
+    refreshToken: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+        field: 'refresh_token'
     },
     expiresAt: {
         type: DataTypes.DATE,
-        allowNull: false,
+        allowNull: true,
         field: 'expires_at'
-    },
-    isRevoked: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: false,
-        field: 'is_revoked'
     }
 }, {
     sequelize,
-    modelName: 'Session',
-    tableName: 'sessions',
+    modelName: 'OAuthAccount',
+    tableName: 'oauth_accounts',
     timestamps: true,
     indexes: [
         {
             fields: ['user_id']
         },
         {
-            fields: ['refresh_token']
+            fields: ['provider', 'provider_id'],
+            unique: true
         },
         {
-            fields: ['expires_at']
-        },
-        {
-            fields: ['user_id', 'is_revoked']
+            fields: ['email']
         }
     ]
 });
 
-module.exports = { Session };
+module.exports = { OAuthAccount };
 
