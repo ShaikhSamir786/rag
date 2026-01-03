@@ -45,6 +45,17 @@ services:
     networks:
       - microservices
 
+  mongodb:
+    image: mongo:7-jammy
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: chat-service
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - microservices
+
   # ==============================================
   # BACKEND SERVICES
   # ==============================================
@@ -200,6 +211,33 @@ services:
       - ./rag-backend/packages:/app/packages
       - /app/node_modules
 
+  chat-service:
+    build:
+      context: ./rag-backend
+      dockerfile: services/chat-service/Dockerfile
+    command: npx nodemon src/index.js
+    ports:
+      - "3008:3008"
+    environment:
+      - NODE_ENV=development
+      - MONGODB_URI=mongodb://mongodb:27017/chat-service
+      - REDIS_URL=redis://redis:6379
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - QUERY_SERVICE_URL=http://query-service:3004
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - PORT=3008
+    depends_on:
+      - mongodb
+      - redis
+    networks:
+      - microservices
+    volumes:
+      - ./rag-backend/services/chat-service:/app/services/chat-service
+      - ./rag-backend/packages:/app/packages
+      - /app/node_modules
+
   billing-service:
     build:
       context: ./rag-backend
@@ -220,6 +258,7 @@ services:
 volumes:
   postgres_data:
   redis_data:
+  mongodb_data:
 
 
 networks:

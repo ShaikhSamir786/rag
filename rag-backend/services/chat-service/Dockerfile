@@ -2,11 +2,11 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Install pnpm (or use npm)
-RUN npm install -g npm@latest
+# Install pnpm
+RUN npm install -g pnpm
 
 # Copy workspace configs
-COPY package.json ./
+COPY pnpm-workspace.yaml package.json ./
 
 # Copy packages
 COPY packages ./packages
@@ -14,12 +14,14 @@ COPY packages ./packages
 # Copy service
 COPY services/chat-service ./services/chat-service
 
-# Install dependencies
-RUN npm install
+# Install dependencies (from root to link workspace packages)
+RUN pnpm install
 
-# Set workdir
+# Set workdir to service
 WORKDIR /app/services/chat-service
 
-EXPOSE 3006
+# Expose port
+EXPOSE 3008
 
+# Cmd (overridden by docker-compose usually)
 CMD ["node", "src/index.js"]

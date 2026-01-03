@@ -11,10 +11,10 @@
         "test:integration": "jest --testPathPattern=integration"
     },
     "dependencies": {
-        "@rag-platform/common": "*",
-        "@rag-platform/database": "*",
-        "@rag-platform/events": "*",
-        "@rag-platform/logger": "*",
+        "@rag-platform/common": "workspace:*",
+        "@rag-platform/database": "workspace:*",
+        "@rag-platform/events": "workspace:*",
+        "@rag-platform/logger": "workspace:*",
         "@babel/parser": "^7.23.0",
         "@babel/traverse": "^7.23.0",
         "axios": "^1.6.0",
