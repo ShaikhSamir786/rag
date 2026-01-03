@@ -15,7 +15,7 @@ COPY packages ./packages
 COPY services/query-service ./services/query-service
 
 # Install dependencies
-RUN pnpm install --frozen-lockfile
+RUN pnpm install
 
 # Set workdir to service
 WORKDIR /app/services/query-service

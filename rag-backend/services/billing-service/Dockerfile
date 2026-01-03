@@ -10,12 +10,13 @@ COPY pnpm-workspace.yaml package.json ./
 
 # Copy packages
 COPY packages ./packages
+RUN ls -la packages && ls -la packages/database
 
 # Copy service
 COPY services/billing-service ./services/billing-service
 
 # Install dependencies
-RUN pnpm install --frozen-lockfile
+RUN pnpm install
 
 # Set workdir to service
 WORKDIR /app/services/billing-service

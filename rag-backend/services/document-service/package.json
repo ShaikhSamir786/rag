@@ -8,10 +8,10 @@
     "@aws-sdk/client-s3": "^3.454.0",
     "sequelize": "^6.35.0",
     "pg": "^8.11.0",
-    "@rag-platform/common": "*",
-    "@rag-platform/logger": "*",
-    "@rag-platform/database": "*",
-    "@rag-platform/queue": "*",
-    "@rag-platform/events": "*"
+    "@rag-platform/common": "workspace:*",
+    "@rag-platform/logger": "workspace:*",
+    "@rag-platform/database": "workspace:*",
+    "@rag-platform/queue": "workspace:*",
+    "@rag-platform/events": "workspace:*"
   }
 }

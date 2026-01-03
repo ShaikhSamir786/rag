@@ -1,7 +1,28 @@
-version: '3.8'
-
 services:
-  # Databases
+  # ==============================================
+  # FRONTEND
+  # ==============================================
+  rag-frontend:
+    build:
+      context: ./rag-frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
+    depends_on:
+      - api-gateway
+    networks:
+      - microservices
+    volumes:
+      - ./rag-frontend/src:/app/src
+      - ./rag-frontend/public:/app/public
+      - /app/node_modules
+
+  # ==============================================
+  # DATABASES
+  # ==============================================
   postgres:
     image: postgres:15-alpine
     environment:
@@ -24,14 +45,16 @@ services:
     networks:
       - microservices
 
-  # API Gateway
+  # ==============================================
+  # BACKEND SERVICES
+  # ==============================================
   api-gateway:
     build:
-      context: ../../
+      context: ./rag-backend
       dockerfile: services/api-gateway/Dockerfile
     command: npx nodemon src/index.js
     ports:
-      - "8000:3000"
+      - "8000:3000" # Mapped to 8000 to avoid conflict with frontend
     environment:
       - NODE_ENV=development
       - REDIS_URL=redis://redis:6379
@@ -39,19 +62,19 @@ services:
       - DOCUMENT_SERVICE_URL=http://document-service:3002
       - QUERY_SERVICE_URL=http://query-service:3004
       - JWT_SECRET=dev-secret
+      - PORT=3000
     depends_on:
       - redis
     networks:
       - microservices
     volumes:
-      - ../../services/api-gateway:/app/services/api-gateway
-      - ../../packages:/app/packages
+      - ./rag-backend/services/api-gateway:/app/services/api-gateway
+      - ./rag-backend/packages:/app/packages
       - /app/node_modules
 
-  # Auth Service
   auth-service:
     build:
-      context: ../../
+      context: ./rag-backend
       dockerfile: services/auth-service/Dockerfile
     command: npx nodemon src/index.js
     ports:
@@ -67,14 +90,13 @@ services:
     networks:
       - microservices
     volumes:
-      - ../../services/auth-service:/app/services/auth-service
-      - ../../packages:/app/packages
+      - ./rag-backend/services/auth-service:/app/services/auth-service
+      - ./rag-backend/packages:/app/packages
       - /app/node_modules
 
-  # Document Service (Core + Worker)
   document-service:
     build:
-      context: ../../
+      context: ./rag-backend
       dockerfile: services/document-service/Dockerfile
     command: npx nodemon src/index.js
     ports:
@@ -91,14 +113,13 @@ services:
     networks:
       - microservices
     volumes:
-      - ../../services/document-service:/app/services/document-service
-      - ../../packages:/app/packages
+      - ./rag-backend/services/document-service:/app/services/document-service
+      - ./rag-backend/packages:/app/packages
       - /app/node_modules
 
-  # Embedding Service
   embedding-service:
     build:
-      context: ../../
+      context: ./rag-backend
       dockerfile: services/embedding-service/Dockerfile
     command: npx nodemon src/index.js
     ports:
@@ -114,14 +135,13 @@ services:
     networks:
       - microservices
     volumes:
-      - ../../services/embedding-service:/app/services/embedding-service
-      - ../../packages:/app/packages
+      - ./rag-backend/services/embedding-service:/app/services/embedding-service
+      - ./rag-backend/packages:/app/packages
       - /app/node_modules
 
-  # Query Service
   query-service:
     build:
-      context: ../../
+      context: ./rag-backend
       dockerfile: services/query-service/Dockerfile
     command: npx nodemon src/index.js
     ports:
@@ -136,14 +156,13 @@ services:
     networks:
       - microservices
     volumes:
-      - ../../services/query-service:/app/services/query-service
-      - ../../packages:/app/packages
+      - ./rag-backend/services/query-service:/app/services/query-service
+      - ./rag-backend/packages:/app/packages
       - /app/node_modules
 
-  # Notification Service
   notification-service:
     build:
-      context: ../../
+      context: ./rag-backend
       dockerfile: services/notification-service/Dockerfile
     command: npx nodemon src/index.js
     ports:
@@ -158,14 +177,13 @@ services:
     networks:
       - microservices
     volumes:
-      - ../../services/notification-service:/app/services/notification-service
-      - ../../packages:/app/packages
+      - ./rag-backend/services/notification-service:/app/services/notification-service
+      - ./rag-backend/packages:/app/packages
       - /app/node_modules
 
-  # Analytics Service
   analytics-service:
     build:
-      context: ../../
+      context: ./rag-backend
       dockerfile: services/analytics-service/Dockerfile
     command: npx nodemon src/index.js
     ports:
@@ -178,14 +196,13 @@ services:
     networks:
       - microservices
     volumes:
-      - ../../services/analytics-service:/app/services/analytics-service
-      - ../../packages:/app/packages
+      - ./rag-backend/services/analytics-service:/app/services/analytics-service
+      - ./rag-backend/packages:/app/packages
       - /app/node_modules
 
-  # Billing Service
   billing-service:
     build:
-      context: ../../
+      context: ./rag-backend
       dockerfile: services/billing-service/Dockerfile
     command: npx nodemon src/index.js
     ports:
@@ -196,8 +213,8 @@ services:
     networks:
       - microservices
     volumes:
-      - ../../services/billing-service:/app/services/billing-service
-      - ../../packages:/app/packages
+      - ./rag-backend/services/billing-service:/app/services/billing-service
+      - ./rag-backend/packages:/app/packages
       - /app/node_modules
 
 volumes:

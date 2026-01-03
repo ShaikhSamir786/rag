@@ -8,9 +8,9 @@
     "jsonwebtoken": "^9.0.2",
     "sequelize": "^6.35.0",
     "pg": "^8.11.0",
-    "@rag-platform/common": "*",
-    "@rag-platform/logger": "*",
-    "@rag-platform/database": "*",
-    "@rag-platform/events": "*"
+    "@rag-platform/common": "workspace:*",
+    "@rag-platform/logger": "workspace:*",
+    "@rag-platform/database": "workspace:*",
+    "@rag-platform/events": "workspace:*"
   }
 }

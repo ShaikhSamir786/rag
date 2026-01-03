@@ -15,7 +15,7 @@ COPY packages ./packages
 COPY services/analytics-service ./services/analytics-service
 
 # Install dependencies
-RUN pnpm install --frozen-lockfile
+RUN pnpm install
 
 # Set workdir to service
 WORKDIR /app/services/analytics-service

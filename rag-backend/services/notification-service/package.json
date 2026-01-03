@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "main": "src/index.js",
   "dependencies": {
-    "@rag-platform/common": "*",
-    "@rag-platform/logger": "*",
-    "@rag-platform/queue": "*",
+    "@rag-platform/common": "workspace:*",
+    "@rag-platform/logger": "workspace:*",
+    "@rag-platform/queue": "workspace:*",
     "express": "^4.18.2",
     "nodemailer": "^6.9.7",
     "socket.io": "^4.8.3",

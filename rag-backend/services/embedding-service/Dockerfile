@@ -15,7 +15,7 @@ COPY packages ./packages
 COPY services/embedding-service ./services/embedding-service
 
 # Install dependencies
-RUN pnpm install --frozen-lockfile
+RUN pnpm install
 
 # Set workdir to service
 WORKDIR /app/services/embedding-service

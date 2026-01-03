@@ -15,7 +15,7 @@ COPY packages ./packages
 COPY services/auth-service ./services/auth-service
 
 # Install dependencies (from root to link workspace packages)
-RUN pnpm install --frozen-lockfile
+RUN pnpm install
 
 # Set workdir to service
 WORKDIR /app/services/auth-service

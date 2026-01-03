@@ -7,5 +7,5 @@ app.use(express.json());
 const PORT = process.env.PORT || 3003;
 
 app.listen(PORT, () => {
-    logger.info(\`Billing Service running on port \${PORT}\`);
+    logger.info(`Billing Service running on port ${PORT}`);
 });
