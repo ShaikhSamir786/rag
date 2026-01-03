@@ -5,6 +5,7 @@ const router = express.Router();
 const chatRoutes = require('./chat.routes');
 const sessionRoutes = require('./session.routes');
 const messageRoutes = require('./message.routes');
+const questionRoutes = require('./question.routes');
 
 // Health check
 router.get('/health', (req, res) => {
@@ -20,5 +21,6 @@ router.get('/health', (req, res) => {
 router.use('/api', chatRoutes);
 router.use('/api', sessionRoutes);
 router.use('/api', messageRoutes);
+router.use('/api', questionRoutes);
 
 module.exports = router;

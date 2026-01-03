@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-// Folder routes will be implemented later
+// Share routes will be implemented later
 // Placeholder to prevent import errors
 
 module.exports = router;

@@ -25,6 +25,37 @@ Document.init({
         type: DataTypes.STRING,
         allowNull: false
     },
+    mimetype: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    size: {
+        type: DataTypes.INTEGER,
+        allowNull: true
+    },
+    metadata: {
+        type: DataTypes.JSONB,
+        allowNull: true,
+        defaultValue: {}
+    },
+    chunkCount: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        defaultValue: 0
+    },
+    embeddingStatus: {
+        type: DataTypes.ENUM('pending', 'processing', 'completed', 'failed'),
+        allowNull: true,
+        defaultValue: 'pending'
+    },
+    extractedText: {
+        type: DataTypes.TEXT,
+        allowNull: true
+    },
+    errorMessage: {
+        type: DataTypes.TEXT,
+        allowNull: true
+    },
     status: {
         type: DataTypes.ENUM('pending', 'processing', 'completed', 'failed'),
         defaultValue: 'pending'
@@ -35,5 +66,14 @@ Document.init({
     tableName: 'documents',
     timestamps: true
 });
+
+// Associations
+Document.associate = (models) => {
+    Document.hasMany(models.DocumentChunk, {
+        foreignKey: 'documentId',
+        as: 'chunks',
+        onDelete: 'CASCADE',
+    });
+};
 
 module.exports = { Document };
